@@ -2,7 +2,7 @@
 
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { useEffect } from "react";
-import { Award, AlertTriangle, ArrowRight, Ticket, PackageCheck, Utensils } from "lucide-react";
+import { Award, AlertTriangle, ArrowRight, Ticket, PackageCheck, Utensils, ShoppingBag } from "lucide-react";
 
 export function StudentDashboard() {
   const score = useMotionValue(0);
@@ -77,7 +77,7 @@ export function StudentDashboard() {
           className="glass-panel rounded-2xl p-6 lg:col-span-2 flex flex-col justify-center"
         >
           <h3 className="text-xl font-semibold mb-6 border-b border-white/5 pb-4">Quick Actions</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <button className="relative overflow-hidden group p-6 rounded-xl bg-gradient-to-br from-rose-500/20 to-red-600/20 hover:from-rose-500/30 hover:to-red-600/30 border border-rose-500/30 transition-all text-left flex items-start gap-4">
               <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
               <div className="p-3 bg-rose-500/20 rounded-lg text-rose-400 group-hover:scale-110 transition-transform relative z-10">
@@ -96,6 +96,16 @@ export function StudentDashboard() {
               <div>
                 <h4 className="font-semibold text-slate-200 text-lg mb-1">Request Leave</h4>
                 <p className="text-xs text-slate-400">Outing or vacation permission</p>
+              </div>
+            </button>
+
+            <button className="group p-6 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-left flex items-start gap-4">
+              <div className="p-3 bg-emerald-500/20 rounded-lg text-emerald-400 group-hover:scale-110 transition-transform">
+                <ShoppingBag className="w-6 h-6" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-slate-200 text-lg mb-1">Marketplace</h4>
+                <p className="text-xs text-slate-400">Buy, sell or donate items</p>
               </div>
             </button>
           </div>
