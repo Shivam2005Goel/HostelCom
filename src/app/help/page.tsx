@@ -38,7 +38,10 @@ import {
   MapPin,
   Camera,
   CameraOff,
-  Loader2
+  Loader2,
+  MicOff,
+  Globe,
+  Volume2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -196,6 +199,8 @@ export default function HelpPage() {
   
   const [videoRef, setVideoRef] = useState<HTMLVideoElement | null>(null);
   const [canvasRef, setCanvasRef] = useState<HTMLCanvasElement | null>(null);
+  const [loadingModels, setLoadingModels] = useState(false);
+  const faceLandmarkerRef = useRef<FaceLandmarker | null>(null);
   const requestRef = useRef<number>(0);
   const [detectionResults, setDetectionResults] = useState({
     faceDetected: false,
@@ -298,7 +303,9 @@ export default function HelpPage() {
 
   const startCamera = async () => {
     try {
+      setLoadingModels(true);
       await initMediaPipe();
+      setLoadingModels(false);
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { facingMode: "user", width: 640, height: 480 } 
       });
@@ -338,14 +345,101 @@ export default function HelpPage() {
       confidence: 0
     });
   };
-const [currentQuote, setCurrentQuote] = useState(0);
+  const [currentQuote, setCurrentQuote] = useState(0);
   const [likedStories, setLikedStories] = useState<Set<number>>(new Set());
   const [reportText, setReportText] = useState("");
   const [reportSent, setReportSent] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [transcribedText, setTranscribedText] = useState("");
+  const [selectedLanguage, setSelectedLanguage] = useState("en");
   const [showBreathing, setShowBreathing] = useState(false);
   const [breathPhase, setBreathPhase] = useState<"inhale" | "hold" | "exhale">("inhale");
   const [moodScore, setMoodScore] = useState(5);
   const [activeTab, setActiveTab] = useState<"stories" | "wellness" | "report">("stories");
+
+  const languages = [
+    { code: "en", name: "English", flag: "🇬🇧" },
+    { code: "hi", name: "Hindi", flag: "🇮🇳" },
+    { code: "es", name: "Spanish", flag: "🇪🇸" },
+    { code: "fr", name: "French", flag: "🇫🇷" },
+    { code: "de", name: "German", flag: "🇩🇪" },
+    { code: "zh", name: "Chinese", flag: "🇨🇳" },
+    { code: "ja", name: "Japanese", flag: "🇯🇵" },
+    { code: "ko", name: "Korean", flag: "🇰🇷" },
+    { code: "ar", name: "Arabic", flag: "🇸🇦" },
+    { code: "pt", name: "Portuguese", flag: "🇧🇷" },
+    { code: "ru", name: "Russian", flag: "🇷🇺" },
+    { code: "ta", name: "Tamil", flag: "🇱🇰" },
+    { code: "te", name: "Telugu", flag: "🇮🇳" },
+    { code: "bn", name: "Bengali", flag: "🇧🇩" },
+    { code: "mr", name: "Marathi", flag: "🇮🇳" },
+  ];
+
+  const startVoiceRecording = async () => {
+    try {
+      const SpeechRecognition = (window as unknown as { webkitSpeechRecognition?: () => unknown; SpeechRecognition?: () => unknown }).webkitSpeechRecognition || (window as unknown as { webkitSpeechRecognition?: () => unknown }).webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        setTranscribedText("Voice recognition not supported in this browser");
+        return;
+      }
+      
+      const recognition = new (SpeechRecognition as unknown as new () => unknown)() as {
+        continuous: boolean;
+        interimResults: boolean;
+        lang: string;
+        onstart: () => void;
+        onresult: (event: { resultIndex: number; results: { isFinal: boolean; [index: number]: { transcript: string } }[] }) => void;
+        onerror: () => void;
+        onend: () => void;
+        start: () => void;
+        stop: () => void;
+      };
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = selectedLanguage;
+      
+      recognition.onstart = () => {
+        setIsRecording(true);
+      };
+      
+      recognition.onresult = (event: { resultIndex: number; results: { isFinal: boolean; [index: number]: { transcript: string } }[] }) => {
+        let finalTranscript = "";
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript + " ";
+          }
+        }
+        if (finalTranscript) {
+          setReportText(prev => prev + finalTranscript);
+        }
+      };
+      
+      recognition.onerror = () => {
+        setIsRecording(false);
+      };
+      
+      recognition.onend = () => {
+        setIsRecording(false);
+      };
+      
+      recognition.start();
+    } catch (err) {
+      setTranscribedText("Failed to start voice recording");
+    }
+  };
+
+  const stopVoiceRecording = () => {
+    setIsRecording(false);
+  };
+
+  const speakText = (text: string) => {
+    if ("speechSynthesis" in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = selectedLanguage;
+      window.speechSynthesis.speak(utterance);
+    }
+  };
 
   useEffect(() => {
     if (showBreathing) {
@@ -1080,14 +1174,94 @@ const [currentQuote, setCurrentQuote] = useState(0);
                   </div>
                 ) : (
                   <>
+                    {/* Language Selection */}
+                    <div className="mb-6">
+                      <label className="text-slate-400 text-sm mb-3 block flex items-center gap-2">
+                        <Globe className="w-4 h-4" />
+                        Select Language
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {languages.slice(0, 8).map((lang) => (
+                          <button
+                            key={lang.code}
+                            onClick={() => setSelectedLanguage(lang.code)}
+                            className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                              selectedLanguage === lang.code
+                                ? "bg-orange-500/30 text-orange-300 border border-orange-500/50"
+                                : "bg-white/5 text-slate-400 border border-white/10 hover:bg-white/10"
+                            }`}
+                          >
+                            {lang.flag} {lang.name}
+                          </button>
+                        ))}
+                      </div>
+                      <select
+                        value={selectedLanguage}
+                        onChange={(e) => setSelectedLanguage(e.target.value)}
+                        className="mt-3 w-full p-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm"
+                      >
+                        {languages.map((lang) => (
+                          <option key={lang.code} value={lang.code} className="bg-gray-900">
+                            {lang.flag} {lang.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Voice Recording & Text-to-Speech */}
+                    <div className="flex items-center gap-3 mb-4">
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={isRecording ? stopVoiceRecording : startVoiceRecording}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
+                          isRecording 
+                            ? "bg-red-500/80 text-white animate-pulse" 
+                            : "bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30"
+                        }`}
+                      >
+                        {isRecording ? (
+                          <>
+                            <MicOff className="w-4 h-4" />
+                            Stop Recording
+                          </>
+                        ) : (
+                          <>
+                            <Mic className="w-4 h-4" />
+                            Record Voice
+                          </>
+                        )}
+                      </motion.button>
+                      
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => speakText(reportText || "Please enter your concern first.")}
+                        disabled={!reportText.trim()}
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium bg-blue-500/20 text-blue-300 border border-blue-500/30 hover:bg-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <Volume2 className="w-4 h-4" />
+                        Read Aloud
+                      </motion.button>
+                    </div>
+
+                    {isRecording && (
+                      <div className="flex items-center gap-2 mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30">
+                        <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
+                        <span className="text-red-400 text-sm">Recording your concern... Speak now</span>
+                      </div>
+                    )}
+
                     <div className="space-y-5">
                       <div>
                         <label className="text-slate-400 text-sm mb-2 block">What have you noticed?</label>
                         <textarea
                           value={reportText}
                           onChange={(e) => setReportText(e.target.value)}
-                          placeholder="e.g., My friend hasn't been eating lunch, missing classes, seems very sad lately, spending too much time alone, etc..."
-                          className="w-full p-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-orange-500/50 focus:outline-none resize-none h-32"
+                          placeholder="e.g., My friend hasn't been eating lunch, missing classes, seems very sad lately, spending too much time alone, etc...
+
+Or click 'Record Voice' to speak your concern in your preferred language."
+                          className="w-full p-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-orange-500/50 focus:outline-none resize-none h-40"
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-4">
