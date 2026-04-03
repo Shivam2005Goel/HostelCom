@@ -79,7 +79,7 @@ export default function MessPage() {
             transition={{ delay: 0.2 }}
             className="glass-panel p-6"
           >
-             <h3 className="text-xl font-semibold mb-4">Today's Menu</h3>
+             <h3 className="text-xl font-semibold mb-4">Today&apos;s Menu</h3>
              <div className="space-y-4">
                 <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
                   <div>
