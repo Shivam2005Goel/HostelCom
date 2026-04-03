@@ -376,60 +376,71 @@ export default function HelpPage() {
   ];
 
   const startVoiceRecording = async () => {
-    try {
-      const SpeechRecognition = (window as unknown as { webkitSpeechRecognition?: () => unknown; SpeechRecognition?: () => unknown }).webkitSpeechRecognition || (window as unknown as { webkitSpeechRecognition?: () => unknown }).webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        setTranscribedText("Voice recognition not supported in this browser");
-        return;
+    const SpeechRecognitionAPI = (window as unknown as { webkitSpeechRecognition?: new () => unknown; SpeechRecognition?: new () => unknown }).webkitSpeechRecognition;
+    
+    if (!SpeechRecognitionAPI) {
+      setTranscribedText("Voice recognition not supported in this browser. Please use Chrome or Edge.");
+      return;
+    }
+    
+    const recognition = new SpeechRecognitionAPI() as {
+      continuous: boolean;
+      interimResults: boolean;
+      lang: string;
+      onstart: (() => void) | null;
+      onresult: ((event: { resultIndex: number; results: { isFinal: boolean; [index: number]: { transcript: string } }[] }) => void) | null;
+      onerror: ((event: { error: string }) => void) | null;
+      onend: (() => void) | null;
+      start: () => void;
+      stop: () => void;
+    };
+    
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = selectedLanguage === "en" ? "en-US" : selectedLanguage === "hi" ? "hi-IN" : selectedLanguage;
+    
+    recognition.onstart = () => {
+      setIsRecording(true);
+    };
+    
+    recognition.onresult = (event: { resultIndex: number; results: { isFinal: boolean; [index: number]: { transcript: string } }[] }) => {
+      let finalTranscript = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript + " ";
+        }
       }
-      
-      const recognition = new (SpeechRecognition as unknown as new () => unknown)() as {
-        continuous: boolean;
-        interimResults: boolean;
-        lang: string;
-        onstart: () => void;
-        onresult: (event: { resultIndex: number; results: { isFinal: boolean; [index: number]: { transcript: string } }[] }) => void;
-        onerror: () => void;
-        onend: () => void;
-        start: () => void;
-        stop: () => void;
-      };
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang = selectedLanguage;
-      
-      recognition.onstart = () => {
-        setIsRecording(true);
-      };
-      
-      recognition.onresult = (event: { resultIndex: number; results: { isFinal: boolean; [index: number]: { transcript: string } }[] }) => {
-        let finalTranscript = "";
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const transcript = event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
-            finalTranscript += transcript + " ";
-          }
-        }
-        if (finalTranscript) {
-          setReportText(prev => prev + finalTranscript);
-        }
-      };
-      
-      recognition.onerror = () => {
-        setIsRecording(false);
-      };
-      
-      recognition.onend = () => {
-        setIsRecording(false);
-      };
-      
+      if (finalTranscript) {
+        setReportText(prev => prev + finalTranscript);
+      }
+    };
+    
+    recognition.onerror = (event: { error: string }) => {
+      console.error("Speech recognition error:", event.error);
+      setIsRecording(false);
+    };
+    
+    recognition.onend = () => {
+      setIsRecording(false);
+    };
+    
+    try {
       recognition.start();
     } catch (err) {
+      console.error("Failed to start recording:", err);
       setTranscribedText("Failed to start voice recording");
     }
   };
 
   const stopVoiceRecording = () => {
+    const SpeechRecognitionAPI = (window as unknown as { webkitSpeechRecognition?: new () => { stop: () => void } }).webkitSpeechRecognition;
+    if (SpeechRecognitionAPI) {
+      try {
+        const recognition = new SpeechRecognitionAPI();
+        (recognition as { stop: () => void }).stop();
+      } catch (e) {}
+    }
     setIsRecording(false);
   };
 
