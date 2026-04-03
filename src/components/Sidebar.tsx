@@ -15,7 +15,8 @@ import {
   Users,
   ShieldAlert,
   Bell,
-  ShoppingBag
+  ShoppingBag,
+  HelpCircle
 } from "lucide-react";
 import { clsx } from "clsx";
 
@@ -33,6 +34,7 @@ export function Sidebar() {
     { name: "Mess & Dining", href: "/dashboard/mess", icon: Utensils },
     { name: "Gym", href: "/dashboard/gym", icon: Dumbbell },
     { name: "Marketplace", href: "/dashboard/marketplace", icon: ShoppingBag },
+    { name: "Hold-on help", href: "/help", icon: HelpCircle },
   ];
 
   const adminLinks = [
