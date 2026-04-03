@@ -34,7 +34,7 @@ export default function AttendancePage() {
           </div>
           <div>
             <div className="text-3xl font-bold text-slate-100">95%</div>
-            <div className="text-sm text-slate-400 font-medium mt-1">This Month's Attendance</div>
+            <div className="text-sm text-slate-400 font-medium mt-1">This Month&apos;s Attendance</div>
           </div>
         </motion.div>
 

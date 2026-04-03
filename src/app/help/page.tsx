@@ -191,6 +191,16 @@ export default function HelpPage() {
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState("");
   const [videoRef, setVideoRef] = useState<HTMLVideoElement | null>(null);
+  const [detectionResults, setDetectionResults] = useState({
+    faceDetected: false,
+    smileDetected: false,
+    eyeBlink: 0,
+    headPose: "Center",
+    movementLevel: "Normal",
+    mood: "Neutral",
+    confidence: 0
+  });
+  const [analysisActive, setAnalysisActive] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -210,11 +220,79 @@ export default function HelpPage() {
         videoRef.srcObject = stream;
         setCameraActive(true);
         setCameraError("");
+        setAnalysisActive(true);
+        
+        // Start simulation of detection results
+        startDetectionSimulation();
       }
     } catch (err) {
       setCameraError("Camera access denied. Please allow camera permissions.");
       setCameraActive(false);
     }
+  };
+
+  const startDetectionSimulation = () => {
+    const intervals: NodeJS.Timeout[] = [];
+    
+    // Face detection simulation
+    const faceInterval = setInterval(() => {
+      setDetectionResults(prev => ({
+        ...prev,
+        faceDetected: Math.random() > 0.1,
+        smileDetected: Math.random() > 0.6,
+        confidence: Math.floor(Math.random() * 20) + 80
+      }));
+    }, 2000);
+    intervals.push(faceInterval);
+    
+    // Eye blink simulation
+    const blinkInterval = setInterval(() => {
+      setDetectionResults(prev => ({
+        ...prev,
+        eyeBlink: prev.eyeBlink + Math.floor(Math.random() * 3)
+      }));
+    }, 3000);
+    intervals.push(blinkInterval);
+    
+    // Head pose simulation
+    const poseInterval = setInterval(() => {
+      const poses = ["Center", "Slightly Left", "Slightly Right", "Slightly Up", "Slightly Down"];
+      setDetectionResults(prev => ({
+        ...prev,
+        headPose: poses[Math.floor(Math.random() * poses.length)]
+      }));
+    }, 4000);
+    intervals.push(poseInterval);
+    
+    // Movement level simulation
+    const movementInterval = setInterval(() => {
+      const levels = ["Still", "Minimal", "Normal", "Active", "Very Active"];
+      setDetectionResults(prev => ({
+        ...prev,
+        movementLevel: levels[Math.floor(Math.random() * levels.length)]
+      }));
+    }, 2500);
+    intervals.push(movementInterval);
+    
+    // Mood calculation
+    const moodInterval = setInterval(() => {
+      const moods = [
+        { mood: "Happy", color: "green" },
+        { mood: "Neutral", color: "cyan" },
+        { mood: "Calm", color: "blue" },
+        { mood: "Thoughtful", color: "purple" },
+        { mood: "Tired", color: "amber" }
+      ];
+      const selected = moods[Math.floor(Math.random() * moods.length)];
+      setDetectionResults(prev => ({
+        ...prev,
+        mood: selected.mood
+      }));
+    }, 5000);
+    intervals.push(moodInterval);
+    
+    // Store intervals for cleanup
+    (window as unknown as { detectionIntervals: NodeJS.Timeout[] }).detectionIntervals = intervals;
   };
 
   const stopCamera = () => {
@@ -224,6 +302,22 @@ export default function HelpPage() {
       videoRef.srcObject = null;
     }
     setCameraActive(false);
+    setAnalysisActive(false);
+    setDetectionResults({
+      faceDetected: false,
+      smileDetected: false,
+      eyeBlink: 0,
+      headPose: "Center",
+      movementLevel: "Normal",
+      mood: "Neutral",
+      confidence: 0
+    });
+    
+    // Clear all intervals
+    const intervals = (window as unknown as { detectionIntervals?: NodeJS.Timeout[] }).detectionIntervals;
+    if (intervals) {
+      intervals.forEach(interval => clearInterval(interval));
+    }
   };
   const [currentQuote, setCurrentQuote] = useState(0);
   const [likedStories, setLikedStories] = useState<Set<number>>(new Set());
@@ -1147,51 +1241,98 @@ export default function HelpPage() {
                     <div className="space-y-3">
                       <div className="p-4 rounded-xl bg-slate-800/50 border border-white/10">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-white font-medium">Emotional State</span>
-                          <span className="text-green-400 text-sm">Neutral</span>
+                          <span className="text-white font-medium">Mood</span>
+                          <span className={`text-sm font-medium ${
+                            detectionResults.mood === "Happy" ? "text-green-400" :
+                            detectionResults.mood === "Calm" ? "text-blue-400" :
+                            detectionResults.mood === "Thoughtful" ? "text-purple-400" :
+                            detectionResults.mood === "Tired" ? "text-amber-400" :
+                            "text-cyan-400"
+                          }`}>{analysisActive ? detectionResults.mood : "—"}</span>
                         </div>
                         <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-                          <div className="h-full w-1/2 bg-gradient-to-r from-green-500 to-cyan-500 rounded-full" />
+                          <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: analysisActive ? `${detectionResults.confidence}%` : "0%" }}
+                            className="h-full bg-gradient-to-r from-green-500 to-cyan-500 rounded-full"
+                          />
                         </div>
                       </div>
                       
                       <div className="p-4 rounded-xl bg-slate-800/50 border border-white/10">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-white font-medium">Activity Level</span>
-                          <span className="text-cyan-400 text-sm">Active</span>
+                          <span className="text-white font-medium">Head Pose</span>
+                          <span className="text-cyan-400 text-sm">{analysisActive ? detectionResults.headPose : "—"}</span>
                         </div>
                         <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-                          <div className="h-full w-3/4 bg-cyan-500 rounded-full" />
+                          <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: analysisActive ? "60%" : "0%" }}
+                            className="h-full bg-cyan-500 rounded-full"
+                          />
                         </div>
                       </div>
                       
                       <div className="p-4 rounded-xl bg-slate-800/50 border border-white/10">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-white font-medium">Stress Indicators</span>
-                          <span className="text-green-400 text-sm">Low</span>
+                          <span className="text-white font-medium">Eye Blinks</span>
+                          <span className="text-purple-400 text-sm">{analysisActive ? detectionResults.eyeBlink : "0"} / min</span>
                         </div>
                         <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-                          <div className="h-full w-1/4 bg-green-500 rounded-full" />
+                          <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: analysisActive ? `${Math.min(detectionResults.eyeBlink * 5, 100)}%` : "0%" }}
+                            className="h-full bg-purple-500 rounded-full"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="p-4 rounded-xl bg-slate-800/50 border border-white/10">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-white font-medium">Smile Detection</span>
+                          <span className={`text-sm ${detectionResults.smileDetected ? "text-green-400" : "text-slate-500"}`}>
+                            {analysisActive ? (detectionResults.smileDetected ? "Detected" : "Not Detected") : "—"}
+                          </span>
+                        </div>
+                        <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                          <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: analysisActive ? (detectionResults.smileDetected ? "80%" : "20%") : "0%" }}
+                            className={`h-full rounded-full ${detectionResults.smileDetected ? "bg-green-500" : "bg-slate-500"}`}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="p-4 rounded-xl bg-slate-800/50 border border-white/10">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-white font-medium">Face Detection</span>
+                          <span className={`text-sm ${detectionResults.faceDetected ? "text-green-400" : "text-red-400"}`}>
+                            {analysisActive ? (detectionResults.faceDetected ? "Face Found" : "No Face") : "—"}
+                          </span>
+                        </div>
+                        <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                          <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: analysisActive ? (detectionResults.faceDetected ? "90%" : "10%") : "0%" }}
+                            className={`h-full rounded-full ${detectionResults.faceDetected ? "bg-green-500" : "bg-red-500"}`}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="p-4 rounded-xl bg-slate-800/50 border border-white/10">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-white font-medium">Confidence</span>
+                          <span className="text-amber-400 text-sm">{analysisActive ? `${detectionResults.confidence}%` : "—"}</span>
+                        </div>
+                        <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                          <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: analysisActive ? `${detectionResults.confidence}%` : "0%" }}
+                            className="h-full bg-amber-500 rounded-full"
+                          />
                         </div>
                       </div>
                     </div>
-
-                    {cameraActive && (
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/30"
-                      >
-                        <div className="flex items-center gap-2 mb-2">
-                          <Sparkles className="w-5 h-5 text-indigo-400" />
-                          <span className="text-white font-medium">AI Insights</span>
-                        </div>
-                        <p className="text-slate-400 text-sm">
-                          Your posture and movement patterns appear normal. 
-                          Keep maintaining this positive state! Remember to take breaks when needed.
-                        </p>
-                      </motion.div>
-                    )}
                   </div>
                 </div>
 
@@ -1201,32 +1342,34 @@ export default function HelpPage() {
                     <Video className="w-5 h-5 text-slate-400" />
                     Hostel CCTV Feeds (For Admin Reference)
                   </h4>
-                  {[
-                    { label: "Block A - Main Lobby", cam: "CAM-001" },
-                    { label: "Block A - Floor 1 Corridor", cam: "CAM-002" },
-                    { label: "Block B - Main Entrance", cam: "CAM-003" },
-                    { label: "Block B - Garden Area", cam: "CAM-004" },
-                    { label: "Block C - Common Area", cam: "CAM-005" },
-                    { label: "Block D - Study Room", cam: "CAM-006" },
-                    { label: "Mess - Entrance", cam: "CAM-007" },
-                    { label: "Sports Complex", cam: "CAM-008" },
-                  ].map((cam) => (
-                    <div key={cam.cam} className="p-4 rounded-2xl bg-black/40 border border-white/10">
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
-                        <span className="text-slate-500 text-xs font-mono">{cam.cam}</span>
-                      </div>
-                      <div className="aspect-video bg-slate-800/50 rounded-lg mb-2 relative overflow-hidden">
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <Video className="w-8 h-8 text-slate-600" />
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[
+                      { label: "Block A - Main Lobby", cam: "CAM-001" },
+                      { label: "Block A - Floor 1 Corridor", cam: "CAM-002" },
+                      { label: "Block B - Main Entrance", cam: "CAM-003" },
+                      { label: "Block B - Garden Area", cam: "CAM-004" },
+                      { label: "Block C - Common Area", cam: "CAM-005" },
+                      { label: "Block D - Study Room", cam: "CAM-006" },
+                      { label: "Mess - Entrance", cam: "CAM-007" },
+                      { label: "Sports Complex", cam: "CAM-008" },
+                    ].map((cam) => (
+                      <div key={cam.cam} className="p-4 rounded-2xl bg-black/40 border border-white/10">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
+                          <span className="text-slate-500 text-xs font-mono">{cam.cam}</span>
                         </div>
-                        <div className="absolute bottom-1 left-1 right-1 text-xs text-slate-500 bg-black/50 px-2 py-1 rounded">
-                          LIVE
+                        <div className="aspect-video bg-slate-800/50 rounded-lg mb-2 relative overflow-hidden">
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <Video className="w-8 h-8 text-slate-600" />
+                          </div>
+                          <div className="absolute bottom-1 left-1 right-1 text-xs text-slate-500 bg-black/50 px-2 py-1 rounded">
+                            LIVE
+                          </div>
                         </div>
+                        <p className="text-white text-sm font-medium">{cam.label}</p>
                       </div>
-                      <p className="text-white text-sm font-medium">{cam.label}</p>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
 
                 {/* AI Alert Triggers */}
