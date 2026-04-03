@@ -1610,57 +1610,93 @@ Or click 'Record Voice' to speak your concern in your preferred language."
                   </h4>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="p-5 rounded-2xl bg-red-500/10 border border-red-500/30">
-                      <div className="flex items-center gap-3 mb-2">
-                        <AlertTriangle className="w-5 h-5 text-red-400" />
-                        <span className="text-white font-semibold">Late Night Isolation</span>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <AlertTriangle className="w-5 h-5 text-red-400" />
+                          <span className="text-white font-semibold">Late Night Isolation</span>
+                        </div>
+                        <span className="px-2 py-1 rounded-full bg-red-500/20 text-red-400 text-xs">12 active</span>
                       </div>
                       <p className="text-slate-400 text-sm">Detects students walking alone after 11 PM</p>
                       <div className="mt-3 flex items-center gap-2">
-                        <span className="text-xs text-red-400">Active</span>
-                        <div className="flex-1 h-1 bg-red-500/30 rounded-full overflow-hidden">
-                          <div className="h-full w-3/4 bg-red-500 rounded-full" />
+                        <span className="text-xs text-red-400">Detection Rate</span>
+                        <div className="flex-1 h-1.5 bg-red-500/30 rounded-full overflow-hidden">
+                          <div className="h-full w-[85%] bg-red-500 rounded-full" />
                         </div>
+                        <span className="text-xs text-red-400">85%</span>
                       </div>
                     </div>
                     <div className="p-5 rounded-2xl bg-orange-500/10 border border-orange-500/30">
-                      <div className="flex items-center gap-3 mb-2">
-                        <AlertTriangle className="w-5 h-5 text-orange-400" />
-                        <span className="text-white font-semibold">Unusual Screaming</span>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <AlertTriangle className="w-5 h-5 text-orange-400" />
+                          <span className="text-white font-semibold">Unusual Screaming</span>
+                        </div>
+                        <span className="px-2 py-1 rounded-full bg-orange-500/20 text-orange-400 text-xs">3 active</span>
                       </div>
                       <p className="text-slate-400 text-sm">Detects loud voices/screams in corridors</p>
                       <div className="mt-3 flex items-center gap-2">
-                        <span className="text-xs text-orange-400">Active</span>
-                        <div className="flex-1 h-1 bg-orange-500/30 rounded-full overflow-hidden">
-                          <div className="h-full w-1/2 bg-orange-500 rounded-full" />
+                        <span className="text-xs text-orange-400">Detection Rate</span>
+                        <div className="flex-1 h-1.5 bg-orange-500/30 rounded-full overflow-hidden">
+                          <div className="h-full w-[72%] bg-orange-500 rounded-full" />
                         </div>
+                        <span className="text-xs text-orange-400">72%</span>
                       </div>
                     </div>
                     <div className="p-5 rounded-2xl bg-blue-500/10 border border-blue-500/30">
-                      <div className="flex items-center gap-3 mb-2">
-                        <AlertTriangle className="w-5 h-5 text-blue-400" />
-                        <span className="text-white font-semibold">Prolonged Isolation</span>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <AlertTriangle className="w-5 h-5 text-blue-400" />
+                          <span className="text-white font-semibold">Prolonged Isolation</span>
+                        </div>
+                        <span className="px-2 py-1 rounded-full bg-blue-500/20 text-blue-400 text-xs">8 active</span>
                       </div>
                       <p className="text-slate-400 text-sm">Detects students sitting alone for 30+ mins</p>
                       <div className="mt-3 flex items-center gap-2">
-                        <span className="text-xs text-blue-400">Active</span>
-                        <div className="flex-1 h-1 bg-blue-500/30 rounded-full overflow-hidden">
-                          <div className="h-full w-full bg-blue-500 rounded-full" />
+                        <span className="text-xs text-blue-400">Detection Rate</span>
+                        <div className="flex-1 h-1.5 bg-blue-500/30 rounded-full overflow-hidden">
+                          <div className="h-full w-[91%] bg-blue-500 rounded-full" />
                         </div>
+                        <span className="text-xs text-blue-400">91%</span>
                       </div>
                     </div>
                     <div className="p-5 rounded-2xl bg-purple-500/10 border border-purple-500/30">
-                      <div className="flex items-center gap-3 mb-2">
-                        <AlertTriangle className="w-5 h-5 text-purple-400" />
-                        <span className="text-white font-semibold">Fall Detection</span>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <AlertTriangle className="w-5 h-5 text-purple-400" />
+                          <span className="text-white font-semibold">Fall Detection</span>
+                        </div>
+                        <span className="px-2 py-1 rounded-full bg-purple-500/20 text-purple-400 text-xs">0 active</span>
                       </div>
                       <p className="text-slate-400 text-sm">Detects sudden falls or collapses</p>
                       <div className="mt-3 flex items-center gap-2">
-                        <span className="text-xs text-purple-400">Active</span>
-                        <div className="flex-1 h-1 bg-purple-500/30 rounded-full overflow-hidden">
-                          <div className="h-full w-1/4 bg-purple-500 rounded-full" />
+                        <span className="text-xs text-purple-400">Detection Rate</span>
+                        <div className="flex-1 h-1.5 bg-purple-500/30 rounded-full overflow-hidden">
+                          <div className="h-full w-[95%] bg-purple-500 rounded-full" />
                         </div>
+                        <span className="text-xs text-purple-400">95%</span>
                       </div>
                     </div>
+                  </div>
+                </div>
+
+                {/* Stats Overview */}
+                <div className="grid grid-cols-4 gap-4 mb-8">
+                  <div className="p-4 rounded-2xl bg-green-500/10 border border-green-500/30 text-center">
+                    <p className="text-2xl font-bold text-green-400">1,247</p>
+                    <p className="text-slate-400 text-xs">Safe Check-ins Today</p>
+                  </div>
+                  <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-center">
+                    <p className="text-2xl font-bold text-amber-400">23</p>
+                    <p className="text-slate-400 text-xs">Alerts Generated</p>
+                  </div>
+                  <div className="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/30 text-center">
+                    <p className="text-2xl font-bold text-blue-400">19</p>
+                    <p className="text-slate-400 text-xs">Resolved</p>
+                  </div>
+                  <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-center">
+                    <p className="text-2xl font-bold text-red-400">4</p>
+                    <p className="text-slate-400 text-xs">Pending Review</p>
                   </div>
                 </div>
 
@@ -1671,26 +1707,47 @@ Or click 'Record Voice' to speak your concern in your preferred language."
                     Recent System Alerts
                   </h4>
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-orange-500/10">
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                      <div className="flex items-center gap-3">
+                        <AlertTriangle className="w-4 h-4 text-red-400" />
+                        <span className="text-slate-300 text-sm">Block B - Female student sitting alone in garden for 45 mins</span>
+                      </div>
+                      <span className="text-red-400 text-xs">Just now</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-orange-500/10 border border-orange-500/20">
                       <div className="flex items-center gap-3">
                         <AlertTriangle className="w-4 h-4 text-orange-400" />
-                        <span className="text-slate-300">Block B - Female student sitting alone in garden for 45 mins</span>
+                        <span className="text-slate-300 text-sm">Block A - Multiple students in corridor after 1 AM</span>
                       </div>
-                      <span className="text-slate-500 text-xs">2 min ago</span>
+                      <span className="text-orange-400 text-xs">5 min ago</span>
                     </div>
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-blue-500/10">
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
                       <div className="flex items-center gap-3">
                         <AlertTriangle className="w-4 h-4 text-blue-400" />
-                        <span className="text-slate-300">Block A - Student in corridor after midnight</span>
+                        <span className="text-slate-300 text-sm">Block C - Student detected sitting in hallway for 1 hour</span>
                       </div>
-                      <span className="text-slate-500 text-xs">15 min ago</span>
+                      <span className="text-blue-400 text-xs">12 min ago</span>
                     </div>
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-green-500/10">
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                      <div className="flex items-center gap-3">
+                        <AlertTriangle className="w-4 h-4 text-amber-400" />
+                        <span className="text-slate-300 text-sm">Block D - Unusual movement pattern detected</span>
+                      </div>
+                      <span className="text-amber-400 text-xs">18 min ago</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-green-500/10 border border-green-500/20">
                       <div className="flex items-center gap-3">
                         <CheckCircle className="w-4 h-4 text-green-400" />
-                        <span className="text-slate-300">Block C - Resolved: Student returned to room safely</span>
+                        <span className="text-slate-300 text-sm">Block C - Alert resolved: Student returned to room safely</span>
                       </div>
-                      <span className="text-slate-500 text-xs">1 hour ago</span>
+                      <span className="text-green-400 text-xs">35 min ago</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-green-500/10 border border-green-500/20">
+                      <div className="flex items-center gap-3">
+                        <CheckCircle className="w-4 h-4 text-green-400" />
+                        <span className="text-slate-300 text-sm">Block A - Late night check-in: Student confirmed safe</span>
+                      </div>
+                      <span className="text-green-400 text-xs">1 hour ago</span>
                     </div>
                   </div>
                 </div>
