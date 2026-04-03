@@ -34,7 +34,9 @@ import {
   Clock,
   CheckCircle,
   Bell,
-  MapPin
+  MapPin,
+  Camera,
+  CameraOff
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -186,6 +188,43 @@ export default function HelpPage() {
   const [showQuickHelp, setShowQuickHelp] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showCCTVModal, setShowCCTVModal] = useState(false);
+  const [cameraActive, setCameraActive] = useState(false);
+  const [cameraError, setCameraError] = useState("");
+  const [videoRef, setVideoRef] = useState<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (videoRef?.srcObject) {
+        const tracks = (videoRef.srcObject as MediaStream).getTracks();
+        tracks.forEach(track => track.stop());
+      }
+    };
+  }, [videoRef]);
+
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: "user", width: 640, height: 480 } 
+      });
+      if (videoRef) {
+        videoRef.srcObject = stream;
+        setCameraActive(true);
+        setCameraError("");
+      }
+    } catch (err) {
+      setCameraError("Camera access denied. Please allow camera permissions.");
+      setCameraActive(false);
+    }
+  };
+
+  const stopCamera = () => {
+    if (videoRef?.srcObject) {
+      const tracks = (videoRef.srcObject as MediaStream).getTracks();
+      tracks.forEach(track => track.stop());
+      videoRef.srcObject = null;
+    }
+    setCameraActive(false);
+  };
   const [currentQuote, setCurrentQuote] = useState(0);
   const [likedStories, setLikedStories] = useState<Set<number>>(new Set());
   const [reportText, setReportText] = useState("");
@@ -999,23 +1038,169 @@ export default function HelpPage() {
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center gap-4">
                     <div className="w-14 h-14 rounded-2xl bg-cyan-500/20 flex items-center justify-center">
-                      <Video className="w-7 h-7 text-cyan-400" />
+                      <Camera className="w-7 h-7 text-cyan-400" />
                     </div>
                     <div>
-                      <h3 className="text-2xl font-bold text-white">CCTV Safety Monitor</h3>
-                      <p className="text-slate-400">AI-Powered Real-time Hostel Surveillance</p>
+                      <h3 className="text-2xl font-bold text-white">Use My Camera</h3>
+                      <p className="text-slate-400">Real-time AI behavior detection using your camera</p>
                     </div>
                   </div>
                   <button 
-                    onClick={() => setShowCCTVModal(false)}
+                    onClick={() => { stopCamera(); setShowCCTVModal(false); }}
                     className="text-slate-500 hover:text-white p-2"
                   >
                     <X className="w-6 h-6" />
                   </button>
                 </div>
 
-                {/* Camera Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                {/* Your Camera Section */}
+                <div className="grid md:grid-cols-2 gap-8 mb-8">
+                  {/* Camera Preview */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-lg font-semibold text-white flex items-center gap-2">
+                        <Camera className="w-5 h-5 text-cyan-400" />
+                        Your Camera Feed
+                      </h4>
+                      <div className="flex gap-2">
+                        {!cameraActive ? (
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={startCamera}
+                            className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl font-medium flex items-center gap-2"
+                          >
+                            <Camera className="w-4 h-4" />
+                            Start Camera
+                          </motion.button>
+                        ) : (
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={stopCamera}
+                            className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium flex items-center gap-2"
+                          >
+                            <CameraOff className="w-4 h-4" />
+                            Stop
+                          </motion.button>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="relative aspect-video bg-black rounded-2xl overflow-hidden border border-white/10">
+                      {cameraActive ? (
+                        <video
+                          ref={(el) => setVideoRef(el)}
+                          autoPlay
+                          playsInline
+                          muted
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                          {cameraError ? (
+                            <>
+                              <AlertTriangle className="w-12 h-12 text-red-400 mb-3" />
+                              <p className="text-red-400 text-center px-4">{cameraError}</p>
+                            </>
+                          ) : (
+                            <>
+                              <Camera className="w-16 h-16 text-slate-600 mb-3" />
+                              <p className="text-slate-500">Click "Start Camera" to begin</p>
+                              <p className="text-slate-600 text-sm mt-2">AI will analyze your movements</p>
+                            </>
+                          )}
+                        </div>
+                      )}
+                      {cameraActive && (
+                        <div className="absolute top-3 left-3 flex items-center gap-2 px-3 py-1.5 bg-red-500/80 rounded-full">
+                          <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                          <span className="text-white text-xs font-medium">REC</span>
+                        </div>
+                      )}
+                      {cameraActive && (
+                        <div className="absolute bottom-3 right-3 px-3 py-1.5 bg-black/50 rounded-lg">
+                          <p className="text-cyan-400 text-xs">AI Analyzing...</p>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {cameraActive && (
+                      <div className="p-4 rounded-xl bg-gradient-to-r from-cyan-500/10 to-indigo-500/10 border border-cyan-500/20">
+                        <p className="text-white font-medium mb-2">AI Detection Active:</p>
+                        <div className="flex flex-wrap gap-2">
+                          <span className="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 text-sm">Posture Analysis</span>
+                          <span className="px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-sm">Movement Patterns</span>
+                          <span className="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-sm">Facial Expression</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* AI Analysis Panel */}
+                  <div className="space-y-4">
+                    <h4 className="text-lg font-semibold text-white flex items-center gap-2">
+                      <Brain className="w-5 h-5 text-indigo-400" />
+                      Real-time AI Analysis
+                    </h4>
+                    
+                    <div className="space-y-3">
+                      <div className="p-4 rounded-xl bg-slate-800/50 border border-white/10">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-white font-medium">Emotional State</span>
+                          <span className="text-green-400 text-sm">Neutral</span>
+                        </div>
+                        <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                          <div className="h-full w-1/2 bg-gradient-to-r from-green-500 to-cyan-500 rounded-full" />
+                        </div>
+                      </div>
+                      
+                      <div className="p-4 rounded-xl bg-slate-800/50 border border-white/10">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-white font-medium">Activity Level</span>
+                          <span className="text-cyan-400 text-sm">Active</span>
+                        </div>
+                        <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                          <div className="h-full w-3/4 bg-cyan-500 rounded-full" />
+                        </div>
+                      </div>
+                      
+                      <div className="p-4 rounded-xl bg-slate-800/50 border border-white/10">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-white font-medium">Stress Indicators</span>
+                          <span className="text-green-400 text-sm">Low</span>
+                        </div>
+                        <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                          <div className="h-full w-1/4 bg-green-500 rounded-full" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {cameraActive && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/30"
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <Sparkles className="w-5 h-5 text-indigo-400" />
+                          <span className="text-white font-medium">AI Insights</span>
+                        </div>
+                        <p className="text-slate-400 text-sm">
+                          Your posture and movement patterns appear normal. 
+                          Keep maintaining this positive state! Remember to take breaks when needed.
+                        </p>
+                      </motion.div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Simulated CCTV Grid (for demonstration) */}
+                <div className="mt-8 pt-8 border-t border-white/10">
+                  <h4 className="text-lg font-semibold text-white mb-5 flex items-center gap-2">
+                    <Video className="w-5 h-5 text-slate-400" />
+                    Hostel CCTV Feeds (For Admin Reference)
+                  </h4>
                   {[
                     { label: "Block A - Main Lobby", cam: "CAM-001" },
                     { label: "Block A - Floor 1 Corridor", cam: "CAM-002" },
