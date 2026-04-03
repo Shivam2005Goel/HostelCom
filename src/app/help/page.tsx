@@ -1396,22 +1396,19 @@ Or click 'Record Voice' to speak your concern in your preferred language."
                     </div>
                     
                     <div className="relative aspect-video bg-black rounded-2xl overflow-hidden border border-white/10">
-                      {cameraActive ? (
-                        <>
-                          <video
-                            ref={(el) => setVideoRef(el)}
-                            autoPlay
-                            playsInline
-                            muted
-                            className="w-full h-full object-cover"
-                          />
-                          <canvas
-                            ref={(el) => setCanvasRef(el)}
-                            className="absolute inset-0 w-full h-full object-cover pointer-events-none z-10"
-                          />
-                        </>
-                      ) : (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <video
+                          ref={(el) => setVideoRef(el)}
+                          autoPlay
+                          playsInline
+                          muted
+                          className={`w-full h-full object-cover ${cameraActive ? "block" : "hidden"}`}
+                        />
+                        <canvas
+                          ref={(el) => setCanvasRef(el)}
+                          className={`absolute inset-0 w-full h-full object-cover pointer-events-none z-10 ${cameraActive ? "block" : "hidden"}`}
+                        />
+                      {!cameraActive && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black">
                           {cameraError ? (
                             <>
                               <AlertTriangle className="w-12 h-12 text-red-400 mb-3" />
