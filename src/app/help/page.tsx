@@ -37,7 +37,8 @@ import {
   Bell,
   MapPin,
   Camera,
-  CameraOff
+  CameraOff,
+  Loader2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -191,11 +192,11 @@ export default function HelpPage() {
   const [showCCTVModal, setShowCCTVModal] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState("");
+  const lastVideoTimeRef = useRef(-1);
+  
   const [videoRef, setVideoRef] = useState<HTMLVideoElement | null>(null);
   const [canvasRef, setCanvasRef] = useState<HTMLCanvasElement | null>(null);
-  const faceLandmarkerRef = useRef<FaceLandmarker | null>(null);
   const requestRef = useRef<number>(0);
-  const lastVideoTimeRef = useRef(-1);
   const [detectionResults, setDetectionResults] = useState({
     faceDetected: false,
     smileDetected: false,
@@ -209,14 +210,15 @@ export default function HelpPage() {
 
   useEffect(() => {
     return () => {
-      if (videoRef?.srcObject) {
-        const tracks = (videoRef.srcObject as MediaStream).getTracks();
-        tracks.forEach(track => track.stop());
+      if (videoRef && videoRef.srcObject) {
+        const stream = videoRef.srcObject as MediaStream;
+        stream.getTracks().forEach(track => track.stop());
       }
+      if (requestRef.current) cancelAnimationFrame(requestRef.current);
     };
   }, [videoRef]);
 
-  const initMediaPipe = async () => {
+    const initMediaPipe = async () => {
     if (faceLandmarkerRef.current) return;
     const filesetResolver = await FilesetResolver.forVisionTasks(
       "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
@@ -235,6 +237,7 @@ export default function HelpPage() {
   const predictWebcam = useCallback(() => {
     if (!videoRef || !canvasRef || !faceLandmarkerRef.current) return;
     
+    // Setup canvas
     const canvasCtx = canvasRef.getContext("2d");
     if (!canvasCtx) return;
     canvasRef.width = videoRef.videoWidth || 640;
@@ -257,8 +260,11 @@ export default function HelpPage() {
           drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_LEFT_EYEBROW, { color: "#06b6d4", lineWidth: 2 });
           drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_FACE_OVAL, { color: "#8b5cf6", lineWidth: 2 });
           drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_LIPS, { color: "#ec4899", lineWidth: 2 });
+          drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_RIGHT_IRIS, { color: "#06b6d4", lineWidth: 2 });
+          drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_LEFT_IRIS, { color: "#06b6d4", lineWidth: 2 });
         }
         
+        // Update stats
         if (results.faceBlendshapes && results.faceBlendshapes.length > 0) {
           const shapes = results.faceBlendshapes[0].categories;
           const getScore = (name: string) => shapes.find(s => s.categoryName === name)?.score || 0;
@@ -314,7 +320,7 @@ export default function HelpPage() {
 
   const stopCamera = () => {
     if (videoRef?.srcObject) {
-      const tracks = videoRef.srcObject.getTracks();
+      const tracks = (videoRef.srcObject as MediaStream).getTracks();
       tracks.forEach(track => track.stop());
       videoRef.srcObject = null;
     }
@@ -332,7 +338,7 @@ export default function HelpPage() {
       confidence: 0
     });
   };
-  const [currentQuote, setCurrentQuote] = useState(0);
+const [currentQuote, setCurrentQuote] = useState(0);
   const [likedStories, setLikedStories] = useState<Set<number>>(new Set());
   const [reportText, setReportText] = useState("");
   const [reportSent, setReportSent] = useState(false);
@@ -1175,10 +1181,20 @@ export default function HelpPage() {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={startCamera}
-                            className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl font-medium flex items-center gap-2"
+                            disabled={loadingModels}
+                            className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 disabled:bg-slate-600 text-white rounded-xl font-medium flex items-center gap-2"
                           >
-                            <Camera className="w-4 h-4" />
-                            Start Camera
+                            {loadingModels ? (
+                              <>
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                Loading Models...
+                              </>
+                            ) : (
+                              <>
+                                <Camera className="w-4 h-4" />
+                                Start Camera
+                              </>
+                            )}
                           </motion.button>
                         ) : (
                           <motion.button
@@ -1218,9 +1234,19 @@ export default function HelpPage() {
                             </>
                           ) : (
                             <>
-                              <Camera className="w-16 h-16 text-slate-600 mb-3" />
-                              <p className="text-slate-500">Click "Start Camera" to begin</p>
-                              <p className="text-slate-600 text-sm mt-2">AI will analyze your movements</p>
+                              {loadingModels ? (
+                                <>
+                                  <Loader2 className="w-16 h-16 text-cyan-400 animate-spin mb-3" />
+                                  <p className="text-cyan-400">Loading AI Models...</p>
+                                  <p className="text-slate-600 text-sm mt-2">Please wait while we prepare the emotion detector</p>
+                                </>
+                              ) : (
+                                <>
+                                  <Camera className="w-16 h-16 text-slate-600 mb-3" />
+                                  <p className="text-slate-500">Click "Start Camera" to begin</p>
+                                  <p className="text-slate-600 text-sm mt-2">AI will analyze your facial expressions</p>
+                                </>
+                              )}
                             </>
                           )}
                         </div>
