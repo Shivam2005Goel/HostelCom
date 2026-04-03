@@ -1,7 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Ticket, Plus, Clock, CheckCircle, XCircle } from "lucide-react";
+import { Ticket, Plus, Clock, CheckCircle, XCircle, LogOut } from "lucide-react";
+import { useOutingStore } from "@/store/useOutingStore";
+import { GeoFenceTracker } from "@/components/GeoFenceTracker";
+import { LiveMap } from "@/components/LiveMap";
 
 export default function LeavesPage() {
   const requests = [
@@ -9,6 +12,11 @@ export default function LeavesPage() {
     { id: "LR-9012", type: "Medical Leave", dates: "Oct 15 - Oct 18", status: "Approved", icon: CheckCircle, color: "text-emerald-400", bg: "bg-emerald-500/10" },
     { id: "LR-8845", type: "Night Out", dates: "Sep 22", status: "Rejected", icon: XCircle, color: "text-rose-400", bg: "bg-rose-500/10" },
   ];
+
+  const studentId = "STUDENT-1234";
+  const studentName = "Alex Sharma";
+  const { outings, startOuting } = useOutingStore();
+  const activeOuting = outings.find(o => o.studentId === studentId && (o.status === "out" || o.status === "overdue"));
 
   return (
     <div className="space-y-6 max-w-5xl">
@@ -19,11 +27,33 @@ export default function LeavesPage() {
           </h2>
           <p className="text-slate-400 mt-1">Request time away and track approval status.</p>
         </div>
-        <button className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg flex items-center gap-2 font-medium transition-colors shadow-lg shadow-indigo-500/20">
-          <Plus className="w-5 h-5" />
-          Request Leave
-        </button>
+        <div className="flex gap-3">
+          {!activeOuting && (
+            <button 
+              onClick={() => startOuting(studentId, studentName)}
+              className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg flex items-center gap-2 font-medium transition-colors shadow-lg shadow-rose-500/20"
+            >
+              <LogOut className="w-5 h-5" />
+              Exit Campus (Test)
+            </button>
+          )}
+          <button className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg flex items-center gap-2 font-medium transition-colors shadow-lg shadow-indigo-500/20">
+            <Plus className="w-5 h-5" />
+            Request Leave
+          </button>
+        </div>
       </div>
+
+      {activeOuting && (
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6"
+        >
+          <GeoFenceTracker studentId={studentId} />
+          <LiveMap isActive={true} />
+        </motion.div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
         <motion.div 

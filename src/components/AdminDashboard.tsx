@@ -3,8 +3,12 @@
 import { motion } from "framer-motion";
 import { Users, AlertCircle, Wrench, ShieldAlert, CheckCircle } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { useOutingStore } from "@/store/useOutingStore";
 
 export function AdminDashboard() {
+  const { outings } = useOutingStore();
+  const overdueOutings = outings.filter(o => o.status === "overdue");
+  
   const stats = [
     { label: "Total Occupancy", value: "342/400", icon: Users, color: "text-indigo-400", bg: "bg-indigo-400/20" },
     { label: "Late Entries Today", value: "12", icon: AlertCircle, color: "text-rose-400", bg: "bg-rose-400/20" },
@@ -106,6 +110,23 @@ export function AdminDashboard() {
             <h3 className="text-xl font-semibold">Action Items Feed</h3>
           </div>
           <div className="space-y-4">
+            {overdueOutings.map(o => (
+              <div key={o.id} className="group flex flex-col p-4 rounded-xl bg-orange-500/10 border border-orange-500/30 hover:bg-orange-500/20 transition-colors animate-pulse shadow-[0_0_15px_rgba(249,115,22,0.2)]">
+                <div className="flex items-center gap-3 mb-2">
+                  <AlertCircle className="w-5 h-5 text-orange-400 flex-shrink-0" />
+                  <span className="text-sm font-semibold text-orange-400 uppercase tracking-wide">6-Hour Curfew Overdue</span>
+                  <span className="ml-auto text-xs text-orange-500 font-bold">URGENT</span>
+                </div>
+                <p className="text-sm text-slate-200">
+                  <strong className="text-white">{o.studentName}</strong> has been off-campus for over 6 hours.
+                </p>
+                <div className="mt-3 flex gap-2">
+                  <button className="flex-1 py-1.5 bg-orange-500 hover:bg-orange-600 text-slate-900 rounded text-xs font-bold transition-colors">Call Student</button>
+                  <button className="flex-1 py-1.5 border border-orange-500/30 text-orange-400 hover:bg-orange-500/10 rounded text-xs font-bold transition-colors">Mark Reviewed</button>
+                </div>
+              </div>
+            ))}
+
             {/* High Priority Event */}
             <div className="group flex flex-col p-4 rounded-xl bg-rose-500/5 border border-rose-500/20 hover:bg-rose-500/10 transition-colors">
               <div className="flex items-center gap-3 mb-2">
