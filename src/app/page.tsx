@@ -129,7 +129,7 @@ export default function Home() {
             className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto"
           >
             <button 
-              onClick={() => handleLogin('admin')}
+              onClick={() => handleLogin('student')}
               className="px-8 py-4 rounded-xl bg-green-500 text-black font-semibold transition-all hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(34,197,94,0.3)] w-full sm:w-auto flex items-center justify-center gap-2"
             >
               Start Deployment
