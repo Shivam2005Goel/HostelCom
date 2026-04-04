@@ -16,7 +16,7 @@ export default function AttendancePage() {
   return (
     <div className="space-y-6 max-w-5xl">
       <div>
-        <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+        <h2 className="text-4xl font-heading font-bold text-white tracking-tight">
           Attendance Tracker
         </h2>
         <p className="text-slate-400 mt-1">Monitor your check-ins and late entries.</p>

@@ -35,7 +35,6 @@ const listings = [
     category: "Mattress",
     condition: "Good",
     type: "sale",
-    price: 800,
     seller: "Rahul Dev",
     room: "304",
     block: "A",
@@ -48,7 +47,6 @@ const listings = [
     category: "Furniture",
     condition: "Like New",
     type: "donation",
-    price: 0,
     seller: "Amit Singh",
     room: "215",
     block: "B",
@@ -61,7 +59,6 @@ const listings = [
     category: "Books",
     condition: "Fair",
     type: "sale",
-    price: 450,
     seller: "Priya Sharma",
     room: "412",
     block: "A",
@@ -70,16 +67,15 @@ const listings = [
   },
   {
     id: 4,
-    title: "Electric Kettle",
+    title: "Electric pod",
     category: "Appliances",
     condition: "Good",
     type: "donation",
-    price: 0,
     seller: "Vikram Rao",
     room: "108",
     block: "C",
     posted: "3 days ago",
-    image: "☕",
+    image: ".",
   },
   {
     id: 5,
@@ -87,7 +83,6 @@ const listings = [
     category: "Electronics",
     condition: "Like New",
     type: "sale",
-    price: 1200,
     seller: "Neha Gupta",
     room: "503",
     block: "A",
@@ -100,7 +95,7 @@ const listings = [
     category: "Furniture",
     condition: "Good",
     type: "sale",
-    price: 300,
+
     seller: "Arjun Nair",
     room: "321",
     block: "B",
@@ -120,8 +115,8 @@ export default function MarketplacePage() {
       activeFilter === "All"
         ? true
         : activeFilter === "For Sale"
-        ? item.type === "sale"
-        : item.type === "donation";
+          ? item.type === "sale"
+          : item.type === "donation";
     const matchesSearch = item.title
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
@@ -198,11 +193,10 @@ export default function MarketplacePage() {
             <button
               key={f}
               onClick={() => setActiveFilter(f)}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                activeFilter === f
-                  ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-white/5"
-              }`}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${activeFilter === f
+                ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20"
+                : "text-slate-400 hover:text-slate-200 hover:bg-white/5"
+                }`}
             >
               {f}
             </button>
@@ -225,11 +219,10 @@ export default function MarketplacePage() {
               <div className="flex justify-between items-start mb-4">
                 <div className="text-4xl">{item.image}</div>
                 <span
-                  className={`px-2.5 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 ${
-                    item.type === "donation"
-                      ? "bg-emerald-500/20 text-emerald-400"
-                      : "bg-amber-500/20 text-amber-400"
-                  }`}
+                  className={`px-2.5 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 ${item.type === "donation"
+                    ? "bg-emerald-500/20 text-emerald-400"
+                    : "bg-amber-500/20 text-amber-400"
+                    }`}
                 >
                   {item.type === "donation" ? (
                     <>
@@ -252,13 +245,12 @@ export default function MarketplacePage() {
                   <span>{item.category}</span>
                   <span>•</span>
                   <span
-                    className={`${
-                      item.condition === "Like New"
-                        ? "text-emerald-400"
-                        : item.condition === "Good"
+                    className={`${item.condition === "Like New"
+                      ? "text-emerald-400"
+                      : item.condition === "Good"
                         ? "text-amber-400"
                         : "text-rose-400"
-                    }`}
+                      }`}
                   >
                     {item.condition}
                   </span>
