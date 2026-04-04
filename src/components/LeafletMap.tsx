@@ -18,33 +18,54 @@ export default function LeafletMap({ isActive }: { isActive: boolean }) {
     // Initialize Map with custom coordinates based on user snippet
     const map = L.map(mapRef.current).setView([position.lat, position.lng], 16);
 
-    // Load OpenStreetMap tiles
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    // Load CartoDB Dark Matter tiles (Standard OLED requirement)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://carto.com/">CartoDB</a> contributors',
+      maxZoom: 20
     }).addTo(map);
 
-    // Override Leaflet's default icon URLs because Next.js webpack breaks local image imports inside node_modules sometimes
-    const customIcon = L.icon({
-      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
-      popupAnchor: [1, -34],
-      shadowSize: [41, 41]
+    // Minimalist Neo-Green Marker
+    const customIcon = L.divIcon({
+      className: 'bg-transparent',
+      html: `
+        <div class="relative w-6 h-6 flex items-center justify-center">
+          <div class="absolute inset-0 bg-green-500 rounded-full blur-sm opacity-50"></div>
+          <div class="relative w-3 h-3 bg-white rounded-full border-2 border-green-500"></div>
+        </div>
+      `,
+      iconSize: [24, 24],
+      iconAnchor: [12, 12],
+      popupAnchor: [0, -12]
     });
 
     const studentMarker = L.marker([position.lat, position.lng], { icon: customIcon }).addTo(map)
-        .bindPopup('A pretty CSS popup.<br> Easily customizable.')
-        .openPopup();
+        .bindPopup(`
+          <div style="background: #000; padding: 4px; color: #fff; border-radius: 4px; font-family: 'Space Grotesk', sans-serif;">
+             <strong style="color: #22c55e;">Loc.</strong><br />
+             ${position.lat.toFixed(4)}, ${position.lng.toFixed(4)}
+          </div>
+        `);
+
+    // Override Leaflet popup styles minimally
+    const style = document.createElement('style');
+    style.innerHTML = `
+      .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+        background: #0A0A0A;
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+    `;
+    document.head.appendChild(style);
 
     // VITC GeoFence indicator (200m circle)
     L.circle([CAMPUS_LAT, CAMPUS_LNG], {
-      color: '#10b981',
-      fillColor: '#10b981',
-      fillOpacity: 0.1,
+      color: '#22c55e',
+      weight: 1,
+      fillColor: '#22c55e',
+      fillOpacity: 0.05,
+      dashArray: '4, 8',
       radius: 200
-    }).addTo(map).bindPopup('VITC Geo-fence bounds (200m)');
+    }).addTo(map);
 
     // Start watching position
     if (!navigator.geolocation) return;
@@ -53,7 +74,6 @@ export default function LeafletMap({ isActive }: { isActive: boolean }) {
         const { latitude, longitude } = pos.coords;
         setPosition({ lat: latitude, lng: longitude });
         
-        // Update marker and map view on position change
         studentMarker.setLatLng([latitude, longitude]);
         map.setView([latitude, longitude], map.getZoom());
       },
@@ -64,19 +84,30 @@ export default function LeafletMap({ isActive }: { isActive: boolean }) {
     // Cleanup: destroy map and stop watching
     return () => {
       navigator.geolocation.clearWatch(watchId);
+      document.head.removeChild(style);
       map.remove();
     };
-  }, [isActive]); // Only re-run if isActive changes to strictly manage single map instance
+  }, [isActive]); 
 
   if (!isActive) return null;
 
   return (
-    <div className="relative overflow-hidden rounded-3xl bg-slate-900 border border-slate-700/50 p-1 shadow-xl flex flex-col h-[400px]">
-      <div className="absolute top-4 right-4 z-[400] bg-slate-900/80 backdrop-blur text-white px-3 py-1.5 rounded-lg border border-slate-700 shadow flex items-center gap-2 text-xs font-bold uppercase tracking-wide">
-        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Live OSM Feed
+    <div className="relative overflow-hidden rounded-[2rem] bg-[#0A0A0A] border border-white/5 p-2 shadow-2xl flex flex-col h-[500px]">
+      {/* HUD Info Panel */}
+      <div className="absolute top-6 left-6 z-[400] pointer-events-none">
+        <div className="bg-[#000]/80 backdrop-blur-xl text-green-500 px-4 py-2 rounded-xl border border-white/10 flex flex-col gap-1 shadow-lg">
+           <span className="text-xs font-heading font-bold text-white">Live Tracking</span>
+           <span className="text-[10px] font-medium text-slate-400">Precision: High</span>
+        </div>
       </div>
+
+      <div className="absolute bottom-6 right-6 z-[400] flex items-center gap-2 bg-[#000]/80 px-3 py-1.5 rounded-full border border-white/10 backdrop-blur pointer-events-none text-[10px] font-sans text-slate-400">
+         GEO: {position.lat.toFixed(3)}, {position.lng.toFixed(3)}
+      </div>
+
       {/* Map Target Div defined here */}
-      <div ref={mapRef} id="map" className="w-full h-full rounded-2xl z-0" />
+      <div ref={mapRef} id="map" className="w-full h-full rounded-2xl z-0 overflow-hidden relative">
+      </div>
     </div>
   );
 }
